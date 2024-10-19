@@ -18,7 +18,7 @@ CREATE TABLE users (
 3. Create tickets table
 ```sql
 CREATE TABLE tickets (
-    id VARCHAR(15) PRIMARY KEY,
+    ticket_id VARCHAR(15) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     id_no VARCHAR(30) NOT NULL,
     phone_no VARCHAR(15),
