@@ -142,6 +142,13 @@ def ticket_entry():
         # Clear previous flash messages
         session.pop('_flashes', None)
 
+        # Check is user is active
+        user = User.query.filter_by(id=user_id).first()
+        if not user.active:
+            flash('User is not active.', 'error')
+            logger.warning(f'User {user_id} is not active.')
+            return redirect(url_for('login'))
+
         prev_ticket = Ticket.query.filter_by(id_no=prn).first()
         if prev_ticket:
             # Update Email, Phone Number and Ticket Type
