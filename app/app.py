@@ -2,9 +2,12 @@ import logging
 import string
 import sys
 import random
-from flask import Flask, render_template, request, redirect, url_for, session, flash, make_response
-from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import timedelta
+
+from flask import Flask, render_template, request, redirect, url_for, session, flash, make_response, jsonify
+from werkzeug.security import check_password_hash, generate_password_hash
+
+import pesu_academy_fetch
 from models import User, Ticket
 from extensions import db
 
@@ -182,6 +185,22 @@ def ticket_entry():
         response.headers['Pragma'] = 'no-cache'
         response.headers['Expires'] = '-1'
         return response
+    
+@app.route('/fetch_data', methods=['POST'])
+def fetch_data():
+    data = request.json
+    email = data.get('email')
+    phone = data.get('phone')
+    prn = data.get('prn')
+
+    # Try fetching data using email, phone, and PRN in that order
+    for key, value in [('email', email), ('phone', phone), ('prn', prn)]:
+        if value:
+            result = pesu_academy_fetch.get_know_your_class_and_section(value)
+            if result:
+                return jsonify(result)
+
+    return jsonify({'error': 'Data not found'}), 404
 
 @app.route('/logout')
 def logout():
