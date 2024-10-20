@@ -4,25 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
-    <h2>Login</h2>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <ul class="flashes">
-            {% for category, message in messages %}
-                <li class="{{ category }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    {% endwith %}
-    <form method="POST" action="{{ url_for('login') }}">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <button type="submit">Login</button>
-    </form>
+<body style="margin: 0; padding: 20px; min-height: 100vh; background: linear-gradient(135deg, #FFDD00 0%, #FF0000 100%); display: flex; justify-content: center; align-items: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; box-sizing: border-box;">
+    <div style="background: rgba(255, 255, 255, 0.95); padding: 2rem; border-radius: 20px; box-shadow: 0 8px 32px rgba(255, 0, 0, 0.2); width: 100%; max-width: 400px; border: 2px solid rgba(255, 0, 0, 0.1);">
+        <h2 style="color: #CC0000; margin: 0 0 1.5rem 0; font-size: 2rem; text-align: center; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Login</h2>
+
+        {% if get_flashed_messages() %}
+            <div style="padding: 1rem; margin-bottom: 1rem; background: rgba(204, 0, 0, 0.1); border-radius: 10px; color: #CC0000;">
+                {% for message in get_flashed_messages() %}
+                    <div style="margin-bottom: 0.5rem; text-align: center;">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('login') }}" style="width: 100%;">
+            <div style="margin-bottom: 1.5rem; position: relative;">
+                <label for="username" style="display: block; margin-bottom: 0.5rem; color: #CC0000; font-weight: 600; font-size: 0.9rem;">Username</label>
+                <i class="fas fa-user" style="position: absolute; left: 15px; top: 38px; color: #FFDD00;"></i>
+                <input type="text" id="username" name="username" required 
+                    style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 2px solid #FFDD00; border-radius: 10px; font-size: 1rem; background: white; box-sizing: border-box; transition: all 0.2s ease-in-out; outline: none;"
+                    onmouseover="this.style.borderColor='#FFB800'" 
+                    onmouseout="this.style.borderColor='#FFDD00'"
+                    onfocus="this.style.borderColor='#CC0000'; this.style.boxShadow='0 0 0 3px rgba(204, 0, 0, 0.1)'"
+                    onblur="this.style.borderColor='#FFDD00'; this.style.boxShadow='none'">
+            </div>
+
+            <div style="margin-bottom: 1.5rem; position: relative;">
+                <label for="password" style="display: block; margin-bottom: 0.5rem; color: #CC0000; font-weight: 600; font-size: 0.9rem;">Password</label>
+                <i class="fas fa-lock" style="position: absolute; left: 15px; top: 38px; color: #FFDD00;"></i>
+                <input type="password" id="password" name="password" required 
+                    style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 2px solid #FFDD00; border-radius: 10px; font-size: 1rem; background: white; box-sizing: border-box; transition: all 0.2s ease-in-out; outline: none;"
+                    onmouseover="this.style.borderColor='#FFB800'" 
+                    onmouseout="this.style.borderColor='#FFDD00'"
+                    onfocus="this.style.borderColor='#CC0000'; this.style.boxShadow='0 0 0 3px rgba(204, 0, 0, 0.1)'"
+                    onblur="this.style.borderColor='#FFDD00'; this.style.boxShadow='none'">
+            </div>
+
+            <button type="submit" 
+                style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #FFDD00 0%, #CC0000 100%); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; box-shadow: 0 2px 4px rgba(204, 0, 0, 0.2); text-transform: uppercase; letter-spacing: 1px;"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(204, 0, 0, 0.3)'" 
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(204, 0, 0, 0.2)'">
+                Login
+            </button>
+        </form>
+    </div>
 </body>
 </html>
