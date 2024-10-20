@@ -1,19 +1,29 @@
 import logging
+import sys
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import User
 from extensions import db
 
-# Initialize logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.FileHandler('WebApp.log', encoding='utf-8', mode='a')
-handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(handler)
-
-# Initialize the app
+# Initialize Flask app
 app = Flask(__name__)
 app.config.from_object('config.Config')
+
+# Initialize logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)  # Set your desired log level (INFO, DEBUG, etc.)
+
+# StreamHandler sends logs to stdout (captured by Vercel)
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.INFO)  # Set the handler log level
+
+# Formatter for the log output
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(formatter)
+
+# Add handler to the logger if not already present
+if not logger.hasHandlers():
+    logger.addHandler(console_handler)
 
 # Initialize the db with the app
 db.init_app(app)
