@@ -4,27 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket Entry</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <!-- JavaScript to handle the back button and session timeout -->
     <script>
-        // Time in milliseconds for session timeout (e.g., 30 minutes = 1800000 ms)
         var sessionTimeout = 30 * 60 * 1000;  // 30 minutes
         var timeoutTimer;
 
-        // Function to log out after timeout
         function autoLogout() {
             alert('Your session has expired due to inactivity.');
             window.location.href = document.body.getAttribute('data-logout-url');
         }
 
-        // Function to reset the timer if the user interacts with the page
         function resetTimer() {
-            clearTimeout(timeoutTimer);  // Clear the previous timeout
-            timeoutTimer = setTimeout(autoLogout, sessionTimeout);  // Set a new timeout
+            clearTimeout(timeoutTimer);
+            timeoutTimer = setTimeout(autoLogout, sessionTimeout);
         }
 
-        // Function to handle the Autofill button click
         function autofillData() {
             var email = document.getElementById('email').value;
             var phone = document.getElementById('phone').value;
@@ -53,25 +48,15 @@
             });
         }
 
-        // Event listeners to detect user activity and reset the timeout
         window.onload = function() {
-            // Logout URL from the server (already stored in data-logout-url attribute)
             var logoutUrl = document.body.getAttribute('data-logout-url');
-
-            // Check if the sessionStorage key exists
             if (!sessionStorage.getItem('loggedIn')) {
-                // Assume the user is already authenticated if they reached this page
                 sessionStorage.setItem('loggedIn', 'true');
             }
-
-            // Set a timer to automatically log the user out after the sessionTimeout period
             timeoutTimer = setTimeout(autoLogout, sessionTimeout);
-
-            // Reset the timer on user activity
             document.onmousemove = resetTimer;
             document.onkeypress = resetTimer;
 
-            // Handle the back button (cache) scenario
             window.onpageshow = function(event) {
                 if (event.persisted || window.performance && window.performance.navigation.type === 2) {
                     window.location.href = logoutUrl;
@@ -80,35 +65,52 @@
         };
     </script>
 </head>
-<body data-logout-url="{{ url_for('logout') }}">
-    <h2>Ticket Entry</h2>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul class="flashes">
-                {% for category, message in messages %}
-                    <li class="{{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    <a href="{{ url_for('logout') }}">Logout</a>
-    <form method="POST" action="{{ url_for('ticket_entry') }}">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <label for="phone">Phone:</label>
-        <input type="tel" id="phone" name="phone" required>
-        <label for="prn">PRN:</label>
-        <input type="text" id="prn" name="prn" required>
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <label for="ticket_type">Ticket Type:</label>
-        <select id="ticket_type" name="ticket_type" required>
-            <option value="Regular">Regular</option>
-            <option value="VIP">VIP</option>
-        </select>
-        <br><br>
-        <button type="button" onclick="autofillData()">Autofill</button>
-        <button type="submit">Submit</button>
-    </form>
+<body data-logout-url="{{ url_for('logout') }}" style="font-family: Arial, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #89f7fe, #66a6ff); height: 100vh; display: flex; justify-content: center; align-items: center; position: relative;">
+
+    <!-- Logout Button positioned in the top-right corner -->
+    <a href="{{ url_for('logout') }}" style="position: absolute; top: 20px; right: 20px; background-color: #ff4d4d; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; font-weight: bold;">Logout</a>
+
+    <div style="max-width: 600px; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+        <h2 style="text-align: center; color: #333;">Ticket Entry</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes" style="list-style-type: none; padding: 0; margin: 10px 0;">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}" style="color: #f00; font-weight: bold;">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('ticket_entry') }}" style="display: flex; flex-direction: column;">
+            <label for="email" style="margin-bottom: 5px;">Email:</label>
+            <input type="email" id="email" name="email" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+
+            <label for="phone" style="margin-bottom: 5px;">Phone:</label>
+            <input type="tel" id="phone" name="phone" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+
+            <label for="prn" style="margin-bottom: 5px;">PRN:</label>
+            <input type="text" id="prn" name="prn" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+
+            <label for="name" style="margin-bottom: 5px;">Name:</label>
+            <input type="text" id="name" name="name" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+
+            <label for="ticket_type" style="margin-bottom: 5px;">Ticket Type:</label>
+            <select id="ticket_type" name="ticket_type" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                <option value="Regular">Regular</option>
+                <option value="VIP">VIP</option>
+            </select>
+
+            <button type="button" onclick="autofillData()" style="padding: 10px; margin-top: 10px; background-color: #0066cc; color: #fff; border: none; border-radius: 5px; cursor: pointer;">
+                Autofill
+            </button>
+
+            <button type="submit" style="padding: 10px; margin-top: 10px; background-color: #28a745; color: #fff; border: none; border-radius: 5px; cursor: pointer;">
+                Submit
+            </button>
+        </form>
+    </div>
+
 </body>
 </html>
