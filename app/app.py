@@ -46,6 +46,11 @@ def login():
 
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.passwd, password):
+            if not user.active:
+                # Clear previous flash messages
+                session.pop('_flashes', None)
+                flash('User is not active.', 'error')
+                return redirect(url_for('login'))
             session['user_id'] = user.id
             return redirect(url_for('welcome'))
         else:
