@@ -10,7 +10,7 @@ CREATE DATABASE kkticketing;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
-    passwd VARCHAR(100) NOT NULL,
+    passwd VARCHAR(250) NOT NULL,
     active BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT timezone('utc', NOW())
 );

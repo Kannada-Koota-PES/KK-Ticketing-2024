@@ -11,10 +11,32 @@ app.config.from_object('config.Config')
 # Initialize the db with the app
 db.init_app(app)
 
-
 @app.route('/')
 def home():
     return redirect(url_for('login'))
+
+@app.route('/add_user', methods=['GET', 'POST'])
+def add_user():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        secret = request.form['secret']
+
+        # Clear previous flash messages
+        session.pop('_flashes', None)
+
+        if secret != app.config['SECRET_KEY']:
+            flash('Secret is incorrect.', 'error')
+            return redirect(url_for('add_user'))
+
+        user = User(username=username, passwd=generate_password_hash(password))
+        db.session.add(user)
+        db.session.commit()
+
+        flash('User added successfully.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('add_user.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -23,12 +45,13 @@ def login():
         password = request.form['password']
 
         user = User.query.filter_by(username=username).first()
-        print(len(user.passwd), len(password), check_password_hash(user.passwd, password))
         if user and check_password_hash(user.passwd, password):
             session['user_id'] = user.id
             return redirect(url_for('welcome'))
         else:
-            flash('Login failed. Check your username and/or password.')
+            # Clear previous flash messages
+            session.pop('_flashes', None)
+            flash('Login failed. Check your username and/or password.', 'error')
             return redirect(url_for('login'))
     
     return render_template('login.html')
