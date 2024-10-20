@@ -26,6 +26,7 @@ CREATE TABLE tickets (
     email VARCHAR(50) NOT NULL,
     is_vip BOOLEAN NOT NULL,
     mail_sent BOOLEAN DEFAULT FALSE,
+    is_scanned BOOLEAN DEFAULT FALSE,
     issued_by INT,
     issued_at TIMESTAMP DEFAULT timezone('utc', NOW()),
     FOREIGN KEY (issued_by) REFERENCES users(id)
