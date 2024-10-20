@@ -198,6 +198,7 @@ def fetch_data():
         if value:
             result = pesu_academy_fetch.get_know_your_class_and_section(value)
             if result:
+                result['verified_by'] = key
                 return jsonify(result)
 
     return jsonify({'error': 'Data not found'}), 404

@@ -44,6 +44,7 @@
                 } else {
                     document.getElementById('prn').value = data.prn;
                     document.getElementById('name').value = data.name;
+                    alert(data.verified_by + ' was verified.');
                 }
             })
             .catch(error => {
