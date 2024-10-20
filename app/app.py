@@ -1,8 +1,10 @@
 import logging
+import string
 import sys
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+import random
+from flask import Flask, render_template, request, redirect, url_for, session, flash, make_response
 from werkzeug.security import check_password_hash, generate_password_hash
-from models import User
+from models import User, Ticket
 from extensions import db
 
 # Initialize Flask app
@@ -24,6 +26,13 @@ console_handler.setFormatter(formatter)
 # Add handler to the logger if not already present
 if not logger.hasHandlers():
     logger.addHandler(console_handler)
+
+# Ensure secure cookies
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax'
+)
 
 # Initialize the db with the app
 db.init_app(app)
@@ -84,7 +93,7 @@ def login():
                 return redirect(url_for('login'))
             session['user_id'] = user.id
             logger.info(f'User {username} logged in successfully.')
-            return redirect(url_for('welcome'))
+            return redirect(url_for('ticket_entry'))
         else:
             # Clear previous flash messages
             session.pop('_flashes', None)
@@ -94,13 +103,44 @@ def login():
     
     return render_template('login.html')
 
-@app.route('/welcome')
-def welcome():
-    if 'user_id' in session:
-        user = User.query.get(session['user_id'])
-        return render_template('welcome.html', user=user)
-    else:
+@app.route('/ticket_entry', methods=['GET', 'POST'])
+def ticket_entry():
+    if request.method == 'POST':
+        email = request.form['email']
+        phone = request.form['phone']
+        prn = request.form['prn']
+        name = request.form['name']
+        ticket_type = request.form['ticket_type']
+
+        prev_ticket = Ticket.query.filter_by(id_no=prn).first()
+        if prev_ticket:
+            # Clear previous flash messages
+            session.pop('_flashes', None)
+            flash('Ticket already issued.', 'error')
+            return redirect(url_for('ticket_entry'))
+        
+        ticket_id = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
+        user_id = session['user_id']
+        ticket = Ticket(ticket_id=ticket_id, name=name, id_no=prn, phone_no=phone, email=email, is_vip=True if ticket_type == 'VIP' else False, issued_by=user_id)
+        while Ticket.query.filter_by(ticket_id=ticket_id).first():
+            ticket_id = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
+            ticket.ticket_id = ticket_id
+        db.session.add(ticket)
+        db.session.commit()
+
+        # Clear previous flash messages
+        session.pop('_flashes', None)
+        flash('Ticket issued successfully.', 'success')
+        return redirect(url_for('ticket_entry'))
+    
+    if 'user_id' not in session:
         return redirect(url_for('login'))
+
+    response = make_response(render_template('ticket_entry.html'))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '-1'
+    return response
 
 @app.route('/logout')
 def logout():

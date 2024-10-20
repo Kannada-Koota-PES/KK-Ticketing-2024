@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Entry</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Ticket Entry</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <a href="{{ url_for('logout') }}">Logout</a>
+    <form method="POST" action="{{ url_for('ticket_entry') }}">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" name="phone" required>
+        <label for="prn">PRN:</label>
+        <input type="text" id="prn" name="prn" required>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="ticket_type">Ticket Type:</label>
+        <div>
+            <input type="radio" id="general" name="ticket_type" value="general" required>
+            <label for="general">General</label>
+            <input type="radio" id="vip" name="ticket_type" value="vip" required>
+            <label for="vip">VIP</label>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
