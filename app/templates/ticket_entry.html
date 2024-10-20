@@ -5,8 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket Entry</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- JavaScript to handle the back button and session timeout -->
+    <script>
+        // Time in milliseconds for session timeout (e.g., 30 minutes = 1800000 ms)
+        var sessionTimeout = 30 * 60 * 1000;  // 30 minutes
+        var timeoutTimer;
+
+        // Function to log out after timeout
+        function autoLogout() {
+            alert('Your session has expired due to inactivity.');
+            window.location.href = document.body.getAttribute('data-logout-url');
+        }
+
+        // Function to reset the timer if the user interacts with the page
+        function resetTimer() {
+            clearTimeout(timeoutTimer);  // Clear the previous timeout
+            timeoutTimer = setTimeout(autoLogout, sessionTimeout);  // Set a new timeout
+        }
+
+        // Event listeners to detect user activity and reset the timeout
+        window.onload = function() {
+            // Logout URL from the server (already stored in data-logout-url attribute)
+            var logoutUrl = document.body.getAttribute('data-logout-url');
+
+            // Check if the sessionStorage key exists
+            if (!sessionStorage.getItem('loggedIn')) {
+                // Assume the user is already authenticated if they reached this page
+                sessionStorage.setItem('loggedIn', 'true');
+            }
+
+            // Set a timer to automatically log the user out after the sessionTimeout period
+            timeoutTimer = setTimeout(autoLogout, sessionTimeout);
+
+            // Reset the timer on user activity
+            document.onmousemove = resetTimer;
+            document.onkeypress = resetTimer;
+
+            // Handle the back button (cache) scenario
+            window.onpageshow = function(event) {
+                if (event.persisted || window.performance && window.performance.navigation.type === 2) {
+                    window.location.href = logoutUrl;
+                }
+            };
+        };
+    </script>
 </head>
-<body>
+<body data-logout-url="{{ url_for('logout') }}">
     <h2>Ticket Entry</h2>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -28,12 +73,11 @@
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required>
         <label for="ticket_type">Ticket Type:</label>
-        <div>
-            <input type="radio" id="general" name="ticket_type" value="general" required>
-            <label for="general">General</label>
-            <input type="radio" id="vip" name="ticket_type" value="vip" required>
-            <label for="vip">VIP</label>
-        </div>
+        <select id="ticket_type" name="ticket_type" required>
+            <option value="Regular">Regular</option>
+            <option value="VIP">VIP</option>
+        </select>
+        <br><br>
         <button type="submit">Submit</button>
     </form>
 </body>
