@@ -1,13 +1,22 @@
 import logging
+import string
 import sys
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+import random
+from datetime import timedelta
+
+from flask import Flask, render_template, request, redirect, url_for, session, flash, make_response, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
-from models import User
+
+import pesu_academy_fetch
+from models import User, Ticket
 from extensions import db
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config.from_object('config.Config')
+
+# Set session timeout to 30 minutes
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
 
 # Initialize logging
 logger = logging.getLogger(__name__)
@@ -25,8 +34,34 @@ console_handler.setFormatter(formatter)
 if not logger.hasHandlers():
     logger.addHandler(console_handler)
 
+# Ensure secure cookies
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax'
+)
+
 # Initialize the db with the app
 db.init_app(app)
+
+# Set session to be permanent (session timeout enabled)
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+
+# Require login for any routes that need authentication
+@app.before_request
+def require_login():
+    if 'user_id' not in session and request.endpoint not in ['login', 'logout', 'add_user']:
+        return redirect(url_for('login'))
+
+# Cache control to prevent back button after logout
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '-1'
+    return response
 
 @app.route('/')
 def home():
@@ -69,6 +104,9 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
+        # Clear previous flash messages
+        session.pop('_flashes', None)
+
         try:
             user = User.query.filter_by(username=username).first()
         except Exception as e:
@@ -77,35 +115,105 @@ def login():
             return redirect(url_for('login'))
         if user and check_password_hash(user.passwd, password):
             if not user.active:
-                # Clear previous flash messages
-                session.pop('_flashes', None)
                 flash('User is not active.', 'error')
                 logger.warning(f'User {username} is not active.')
                 return redirect(url_for('login'))
             session['user_id'] = user.id
             logger.info(f'User {username} logged in successfully.')
-            return redirect(url_for('welcome'))
+            return redirect(url_for('ticket_entry'))
         else:
-            # Clear previous flash messages
-            session.pop('_flashes', None)
             flash('Login failed. Check your username and/or password.', 'error')
             logger.warning(f'Login failed for user {username}.')
             return redirect(url_for('login'))
     
     return render_template('login.html')
 
-@app.route('/welcome')
-def welcome():
-    if 'user_id' in session:
-        user = User.query.get(session['user_id'])
-        return render_template('welcome.html', user=user)
+@app.route('/ticket_entry', methods=['GET', 'POST'])
+def ticket_entry():
+    if request.method == 'POST':
+        email = request.form['email']
+        phone = request.form['phone']
+        prn = request.form['prn']
+        name = request.form['name']
+        ticket_type = request.form['ticket_type']
+
+        user_id = session['user_id']
+
+        # Clear previous flash messages
+        session.pop('_flashes', None)
+
+        # Check is user is active
+        user = User.query.filter_by(id=user_id).first()
+        if not user.active:
+            flash('User is not active.', 'error')
+            logger.warning(f'User {user_id} is not active.')
+            return redirect(url_for('login'))
+
+        prev_ticket = Ticket.query.filter_by(id_no=prn).first()
+        if prev_ticket:
+            # Update Email, Phone Number and Ticket Type
+            try:
+                prev_ticket.email = email
+                prev_ticket.phone_no = phone
+                prev_ticket.is_vip = True if ticket_type == 'VIP' else False
+                prev_ticket.issued_by = user_id
+                prev_ticket.mail_sent = False
+                db.session.commit()
+                flash(f'Ticket for {prn} updated successfully.', 'success')
+                logger.info(f'Ticket for {prn} updated successfully.')
+                return redirect(url_for('ticket_entry'))
+            except Exception as e:
+                db.session.rollback()
+                flash('Failed to update ticket.', 'error')
+                logger.error(f'Failed to update ticket. {e}')
+                return redirect(url_for('ticket_entry'))
+        else:
+            ticket_id = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
+            ticket = Ticket(ticket_id=ticket_id, name=name, id_no=prn, phone_no=phone, email=email, is_vip=True if ticket_type == 'VIP' else False, issued_by=user_id)
+            while Ticket.query.filter_by(ticket_id=ticket_id).first():
+                ticket_id = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
+                ticket.ticket_id = ticket_id
+            try:
+                db.session.add(ticket)
+                db.session.commit()
+                logger.info(f'Ticket for {prn} issued successfully.')
+                flash('Ticket issued successfully.', 'success')
+                return redirect(url_for('ticket_entry'))
+            except Exception as e:
+                db.session.rollback()
+                flash('Failed to issue ticket.', 'error')
+                logger.error(f'Failed to issue ticket. {e}')
+                return redirect(url_for('ticket_entry'))
     else:
-        return redirect(url_for('login'))
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        response = make_response(render_template('ticket_entry.html'))
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '-1'
+        return response
+    
+@app.route('/fetch_data', methods=['POST'])
+def fetch_data():
+    data = request.json
+    email = data.get('email')
+    phone = data.get('phone')
+    prn = data.get('prn')
+
+    # Try fetching data using email, phone, and PRN in that order
+    for key, value in [('email', email), ('phone', phone), ('prn', prn)]:
+        if value:
+            result = pesu_academy_fetch.get_know_your_class_and_section(value)
+            if result:
+                result['verified_by'] = key
+                return jsonify(result)
+
+    return jsonify({'error': 'Data not found'}), 404
 
 @app.route('/logout')
 def logout():
     logger.info(f'User {session["user_id"]} logged out.')
-    session.pop('user_id', None)
+    session.clear()  # Clears all session data
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
