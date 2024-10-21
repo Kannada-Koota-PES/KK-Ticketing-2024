@@ -52,7 +52,7 @@ def make_session_permanent():
 # Require login for any routes that need authentication
 @app.before_request
 def require_login():
-    if 'user_id' not in session and request.endpoint not in ['login', 'logout']:
+    if 'user_id' not in session and request.endpoint not in ['login', 'logout', 'add_user']:
         return redirect(url_for('login'))
 
 # Cache control to prevent back button after logout
