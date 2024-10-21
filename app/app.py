@@ -16,7 +16,7 @@ app = Flask(__name__)
 app.config.from_object('config.Config')
 
 # Set session timeout to 30 minutes
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
 
 # Initialize logging
 logger = logging.getLogger(__name__)

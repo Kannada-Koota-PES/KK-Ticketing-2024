@@ -7,7 +7,7 @@
 
     <!-- JavaScript to handle the back button and session timeout -->
     <script>
-        var sessionTimeout = 30 * 60 * 1000;  // 30 minutes
+        var sessionTimeout = 10 * 60 * 1000;  // 10 minutes
         var timeoutTimer;
 
         function autoLogout() {
@@ -25,6 +25,9 @@
             var phone = document.getElementById('phone').value;
             var prn = document.getElementById('prn').value;
 
+            // Show the spinner overlay
+            document.getElementById('spinner-overlay').style.display = 'flex';
+
             fetch('{{ url_for("fetch_data") }}', {
                 method: 'POST',
                 headers: {
@@ -34,6 +37,9 @@
             })
             .then(response => response.json())
             .then(data => {
+                // Hide the spinner overlay
+                document.getElementById('spinner-overlay').style.display = 'none';
+
                 if (data.error) {
                     alert(data.error);
                 } else {
@@ -43,9 +49,50 @@
                 }
             })
             .catch(error => {
+                // Hide the spinner overlay
+                document.getElementById('spinner-overlay').style.display = 'none';
+
                 console.error('Error fetching data:', error);
                 alert('Error fetching data.');
             });
+        }
+
+        function validateEmail(email) {
+            var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(String(email).toLowerCase());
+        }
+
+        function confirmSubmission(event) {
+            event.preventDefault();  // Prevent the form from submitting
+
+            var email = document.getElementById('email').value;
+            var phone = document.getElementById('phone').value;
+            var prn = document.getElementById('prn').value;
+            var name = document.getElementById('name').value;
+            var ticketType = document.getElementById('ticket_type').value;
+
+            // Check if all required fields are filled
+            if (!email || !phone || !prn || !name || !ticketType) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            // Validate email format
+            if (!validateEmail(email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+
+            var confirmationMessage = `Verify the details before submitting:\n
+                Email: ${email}
+                Phone: ${phone}
+                PRN: ${prn}
+                Ticket Type: ${ticketType}
+            `;
+
+            if (confirm(confirmationMessage)) {
+                document.getElementById('ticketForm').submit();
+            }
         }
 
         window.onload = function() {
@@ -67,10 +114,16 @@
 </head>
 <body data-logout-url="{{ url_for('logout') }}" style="font-family: Arial, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #89f7fe, #66a6ff); height: 100vh; display: flex; justify-content: center; align-items: center; position: relative;">
 
+    <!-- Spinner Overlay for buffering -->
+    <div id="spinner-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; flex-direction: column;">
+        <img src="{{ url_for('static', filename='images/spinner.gif') }}" alt="Loading..." style="width: 200px; height: 200px;">
+        <p style="color: white; margin-top: 10px; font-size: 20px;">Fetching Details...</p>
+    </div>
+
     <!-- Logout Button positioned in the top-right corner -->
     <a href="{{ url_for('logout') }}" style="position: absolute; top: 20px; right: 20px; background-color: #ff4d4d; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; font-weight: bold;">Logout</a>
 
-    <div style="max-width: 600px; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+    <div style="max-width: 600px; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); width: 100%;">
         <h2 style="text-align: center; color: #333;">Ticket Entry</h2>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -83,7 +136,7 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('ticket_entry') }}" style="display: flex; flex-direction: column;">
+        <form id="ticketForm" method="POST" action="{{ url_for('ticket_entry') }}" style="display: flex; flex-direction: column;">
             <label for="email" style="margin-bottom: 5px;">Email:</label>
             <input type="email" id="email" name="email" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
 
@@ -98,17 +151,20 @@
 
             <label for="ticket_type" style="margin-bottom: 5px;">Ticket Type:</label>
             <select id="ticket_type" name="ticket_type" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                <option value="" disabled selected>Select Ticket Type</option>
                 <option value="Regular">Regular</option>
                 <option value="VIP">VIP</option>
             </select>
 
-            <button type="button" onclick="autofillData()" style="padding: 10px; margin-top: 10px; background-color: #0066cc; color: #fff; border: none; border-radius: 5px; cursor: pointer;">
-                Autofill
-            </button>
+            <div style="display: flex; justify-content: space-between;">
+                <button type="button" onclick="autofillData()" style="padding: 10px; background-color: #0066cc; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 48%;">
+                    Autofill
+                </button>
 
-            <button type="submit" style="padding: 10px; margin-top: 10px; background-color: #28a745; color: #fff; border: none; border-radius: 5px; cursor: pointer;">
-                Submit
-            </button>
+                <button type="button" onclick="confirmSubmission(event)" style="padding: 10px; background-color: #28a745; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 48%;">
+                    Submit
+                </button>
+            </div>
         </form>
     </div>
 
