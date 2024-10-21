@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login | ಕನ್ನಡ ಕೂಟ</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='KK_logo.ico') }}" type="image/x-icon">
 </head>
 <body style="margin: 0; padding: 20px; min-height: 100vh; background: linear-gradient(135deg, #FFDD00 0%, #FF0000 100%); display: flex; justify-content: center; align-items: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; box-sizing: border-box;">
     <div style="background: rgba(255, 255, 255, 0.95); padding: 2rem; border-radius: 20px; box-shadow: 0 8px 32px rgba(255, 0, 0, 0.2); width: 100%; max-width: 400px; border: 2px solid rgba(255, 0, 0, 0.1);">
@@ -29,7 +30,6 @@
                     onfocus="this.style.borderColor='#CC0000'; this.style.boxShadow='0 0 0 3px rgba(204, 0, 0, 0.1)'"
                     onblur="this.style.borderColor='#FFDD00'; this.style.boxShadow='none'">
             </div>
-
             <div style="margin-bottom: 1.5rem; position: relative;">
                 <label for="password" style="display: block; margin-bottom: 0.5rem; color: #CC0000; font-weight: 600; font-size: 0.9rem;">Password</label>
                 <i class="fas fa-lock" style="position: absolute; left: 15px; top: 38px; color: #FFDD00;"></i>
@@ -40,7 +40,6 @@
                     onfocus="this.style.borderColor='#CC0000'; this.style.boxShadow='0 0 0 3px rgba(204, 0, 0, 0.1)'"
                     onblur="this.style.borderColor='#FFDD00'; this.style.boxShadow='none'">
             </div>
-
             <button type="submit" 
                 style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #FFDD00 0%, #CC0000 100%); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; box-shadow: 0 2px 4px rgba(204, 0, 0, 0.2); text-transform: uppercase; letter-spacing: 1px;"
                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(204, 0, 0, 0.3)'" 
