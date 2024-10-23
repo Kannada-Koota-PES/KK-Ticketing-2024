@@ -177,11 +177,11 @@ def ticket_entry():
                 db.session.add(ticket)
                 db.session.commit()
                 logger.info(f'Ticket for {prn} issued successfully.')
-                flash('Ticket issued successfully.', 'success')
+                flash(f'Ticket for {prn} issued successfully.', 'success')
                 return redirect(url_for('ticket_entry'))
             except Exception as e:
                 db.session.rollback()
-                flash('Failed to issue ticket.', 'error')
+                flash(f'Failed to issue ticket for {prn}.', 'error')
                 logger.error(f'Failed to issue ticket. {e}')
                 return redirect(url_for('ticket_entry'))
     else:

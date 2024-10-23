@@ -18,3 +18,11 @@ label, input {
 button {
     padding: 10px 15px;
 }
+
+.text-success {
+    color: green;
+}
+
+.text-danger {
+    color: red;
+}

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket Entry | ಕನ್ನಡ ಕೂಟ</title>
     <link rel="icon" href="{{ url_for('static', filename='KK_logo.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <!-- JavaScript to handle the back button and session timeout -->
     <script>
         var sessionTimeout = 10 * 60 * 1000;  // 10 minutes
@@ -150,7 +151,7 @@
             {% if messages %}
                 <ul class="flashes" style="list-style-type: none; padding: 0; margin: 10px 0;">
                     {% for category, message in messages %}
-                        <li class="{{ category }}" style="color: #f00; font-weight: bold;">{{ message }}</li>
+                        <li class="{% if category == 'success' %}text-success{% else %}text-danger{% endif %}" style="font-weight: bold;">{{ message }}</li>
                     {% endfor %}
                 </ul>
             {% endif %}
