@@ -62,6 +62,16 @@
             return re.test(String(email).toLowerCase());
         }
 
+        function validatePhone(phone) {
+            var re = /^\d{10}$/;
+            return re.test(phone);
+        }
+
+        function validatePRN() {    //PRN Format PES120XXXXXXX
+            var re = /^PES120\d{7}$/;
+            return re.test(prn);
+        }
+
         function confirmSubmission(event) {
             event.preventDefault();  // Prevent the form from submitting
 
@@ -80,6 +90,16 @@
             // Validate email format
             if (!validateEmail(email)) {
                 alert('Please enter a valid email address.');
+                return;
+            }
+
+            if (!validatePhone(phone)) {
+                alert('Please enter a valid 10-digit phone number.');
+                return;
+            }
+
+            if (!validatePRN(prn)) {
+                alert('Please enter a valid PRN.');
                 return;
             }
 
