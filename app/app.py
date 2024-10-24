@@ -8,7 +8,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import pesu_academy_fetch
-from models import User, Ticket
+from models import User, Ticket, TicketLogs
 from extensions import db
 
 # Initialize Flask app
@@ -142,7 +142,7 @@ def ticket_entry():
         # Clear previous flash messages
         session.pop('_flashes', None)
 
-        # Check is user is active
+        # Check if user is active
         user = User.query.filter_by(id=user_id).first()
         if not user.active:
             flash('User is not active.', 'error')
@@ -159,6 +159,18 @@ def ticket_entry():
                 prev_ticket.issued_by = user_id
                 prev_ticket.mail_sent = False
                 db.session.commit()
+
+                # Log the update action
+                log_entry = TicketLogs(
+                    ticket_id=prev_ticket.ticket_id,
+                    action_type='update',
+                    email=email,
+                    is_vip=prev_ticket.is_vip,
+                    issued_by=user_id
+                )
+                db.session.add(log_entry)
+                db.session.commit()
+
                 flash(f'Ticket for {prn} updated successfully.', 'success')
                 logger.info(f'Ticket for {prn} updated successfully.')
                 return redirect(url_for('ticket_entry'))
@@ -176,6 +188,18 @@ def ticket_entry():
             try:
                 db.session.add(ticket)
                 db.session.commit()
+
+                # Log the issue action
+                log_entry = TicketLogs(
+                    ticket_id=ticket.ticket_id,
+                    action_type='issue',
+                    email=email,
+                    is_vip=ticket.is_vip,
+                    issued_by=user_id
+                )
+                db.session.add(log_entry)
+                db.session.commit()
+
                 logger.info(f'Ticket for {prn} issued successfully.')
                 flash(f'Ticket for {prn} issued successfully.', 'success')
                 return redirect(url_for('ticket_entry'))

@@ -32,3 +32,18 @@ CREATE TABLE tickets (
     FOREIGN KEY (issued_by) REFERENCES users(id)
 );
 ```
+
+4. Create ticket_logs table
+```sql
+    CREATE TABLE ticket_logs (
+        log_id SERIAL PRIMARY KEY,
+        ticket_id VARCHAR(15) NOT NULL,
+        action_type VARCHAR(50) NOT NULL,
+        email VARCHAR(50) NOT NULL,
+        is_vip BOOLEAN NOT NULL,
+        issued_by INT,
+        issued_at TIMESTAMP DEFAULT timezone('utc', NOW()),
+        FOREIGN KEY (issued_by) REFERENCES users(id),
+        FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id)
+    );
+```

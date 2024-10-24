@@ -34,3 +34,21 @@ class Ticket(db.Model):
         self.email = email
         self.is_vip = is_vip
         self.issued_by = issued_by
+
+
+class TicketLogs(db.Model):
+    __tablename__ = 'ticket_logs'
+    log_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    ticket_id = db.Column(db.String(15), db.ForeignKey('tickets.ticket_id'))
+    action_type = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(50), nullable=False)
+    is_vip = db.Column(db.Boolean, nullable=False)
+    issued_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    issued_at = db.Column(db.DateTime, default=db.func.timezone('UTC', db.func.now()))
+
+    def __init__(self, ticket_id, action_type, email, is_vip, issued_by):
+        self.ticket_id = ticket_id
+        self.action_type = action_type
+        self.email = email
+        self.is_vip = is_vip
+        self.issued_by = issued_by
