@@ -52,7 +52,7 @@ def make_session_permanent():
 # Require login for any routes that need authentication
 @app.before_request
 def require_login():
-    if 'user_id' not in session and request.endpoint not in ['login', 'logout', 'add_user']:
+    if 'user_id' not in session and request.endpoint not in ['login', 'logout', 'add_user', 'ticket_count']:
         return redirect(url_for('login'))
 
 # Cache control to prevent back button after logout
@@ -233,6 +233,29 @@ def fetch_data():
                 return jsonify(result)
 
     return jsonify({'error': 'Data not found'}), 404
+
+@app.route('/ticket_count_PmBtxrTXD94r6BJb8kpP')
+def ticket_count():
+    try:
+        count = Ticket.query.count()
+        return jsonify({'count': count})
+    except Exception as e:
+        logger.error(f'Failed to get ticket count. {e}')
+        return jsonify({'error': 'Failed to get ticket count'}), 500
+    
+@app.route('/check_ticket', methods=['POST'])
+def check_ticket():
+    data = request.json
+    prn = data.get('prn')
+
+    ticket = Ticket.query.filter_by(id_no=prn).first()
+    if ticket:
+        return jsonify({'ticket': {
+            'email': ticket.email,
+            'is_vip': ticket.is_vip,
+        }}), 200
+    else:
+        return jsonify({'error': 'Ticket not found'}), 404
 
 @app.route('/logout')
 def logout():

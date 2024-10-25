@@ -116,6 +116,42 @@
             }
         }
 
+        function checkTicket() {
+            var prn = document.getElementById('check_prn').value;
+
+            // Show the spinner overlay
+            document.getElementById('spinner-overlay').style.display = 'flex';
+
+            fetch('{{ url_for("check_ticket") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prn: prn })
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                // Hide the spinner overlay
+                document.getElementById('spinner-overlay').style.display = 'none';
+
+                if (data.error) {
+                    document.getElementById('ticketDetails').innerText = '';
+                    alert(data.error);
+                } else {
+                    document.getElementById('ticketDetails').innerText = `Email: ${data.ticket.email}\n\nTicket Type: ${data.ticket.is_vip ? 'VIP' : 'General'}`;
+                }
+            })
+            .catch(error => {
+
+                // Hide the spinner overlay
+                document.getElementById('spinner-overlay').style.display = 'none';
+
+                console.error('Error checking ticket:', error);
+                alert('Error checking ticket.');
+            });
+        }
+
         window.onload = function() {
             var logoutUrl = document.body.getAttribute('data-logout-url');
             if (!sessionStorage.getItem('loggedIn')) {
@@ -144,7 +180,19 @@
     <!-- Logout Button positioned in the top-right corner -->
     <a href="{{ url_for('logout') }}" style="position: absolute; top: 20px; right: 20px; background-color: #ff4d4d; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; font-weight: bold;">Logout</a>
 
-    <div style="max-width: 600px; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); width: 100%;">
+    <!-- Ticket Check Section -->
+    <div style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); width: 15%; background-color: #f9f9f9; padding: 15px; border-radius: 10px; box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);">
+        <h2 style="text-align: center; color: #333;">Check Ticket</h2>
+        <form id="checkTicketForm" style="display: flex; flex-direction: column;">
+            <label for="check_prn" style="margin-bottom: 5px;">PRN:</label>
+            <input type="text" id="check_prn" name="check_prn" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+            <button type="button" onclick="checkTicket()" style="padding: 10px; background-color: #0066cc; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Check Ticket</button>
+        </form>
+        <div id="ticketDetails" style="margin-top: 15px; font-weight: bold;"></div>
+    </div>
+
+    <!-- Ticket Entry Section -->
+    <div style="max-width: 600px; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); width: 100%; margin: 0 auto;">
         <h2 style="text-align: center; color: #333;">Ticket Entry</h2>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
