@@ -104,16 +104,58 @@
                 return;
             }
 
-            var confirmationMessage = `Verify the details before submitting:\n
-                Email: ${email}
-                Phone: ${phone}
-                PRN: ${prn}
-                Ticket Type: ${ticketType}
-            `;
+            // Check if the ticket already exists
+            checkTicketExistence(prn, function(exists) {
+                if (exists) {
+                    var updateConfirmation = confirm('A ticket with this PRN already exists. Do you want to update the existing ticket?');
+                    if (updateConfirmation) {
+                        document.getElementById('ticketForm').submit();
+                    }
+                } else {
+                    var confirmationMessage = `Verify the details before submitting:\n
+                        Email: ${email}
+                        Phone: ${phone}
+                        PRN: ${prn}
+                        Ticket Type: ${ticketType}
+                    `;
 
-            if (confirm(confirmationMessage)) {
-                document.getElementById('ticketForm').submit();
-            }
+                    if (confirm(confirmationMessage)) {
+                        document.getElementById('ticketForm').submit();
+                    }
+                }
+            });
+        }
+
+        function checkTicketExistence(prn, callback) {
+            // Show the spinner overlay
+            document.getElementById('spinner-overlay').style.display = 'flex';
+
+            fetch('{{ url_for("check_ticket") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prn: prn })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide the spinner overlay
+                document.getElementById('spinner-overlay').style.display = 'none';
+
+                if (data.error) {
+                    callback(false);
+                } else {
+                    callback(true);
+                }
+            })
+            .catch(error => {
+                // Hide the spinner overlay
+                document.getElementById('spinner-overlay').style.display = 'none';
+
+                console.error('Error checking ticket:', error);
+                alert('Error checking ticket.');
+                callback(false);
+            });
         }
 
         function checkTicket() {
@@ -131,7 +173,6 @@
             })
             .then(response => response.json())
             .then(data => {
-
                 // Hide the spinner overlay
                 document.getElementById('spinner-overlay').style.display = 'none';
 
@@ -143,7 +184,6 @@
                 }
             })
             .catch(error => {
-
                 // Hide the spinner overlay
                 document.getElementById('spinner-overlay').style.display = 'none';
 
