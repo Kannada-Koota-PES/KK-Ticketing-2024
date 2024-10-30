@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Link Tree</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="icon" href="{{ url_for('static', filename='KK_logo.ico') }}" type="image/x-icon">
     <style>
         body {
             display: flex;
@@ -14,6 +13,7 @@
             height: 100vh;
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
+            position: relative;
         }
         .link-tree {
             background-color: #fff;
@@ -21,6 +21,8 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
+            width: 500px;
+            height: 400px;
         }
         .link-tree img {
             max-width: 100px;
@@ -38,19 +40,71 @@
             color: #fff;
             text-decoration: none;
             border-radius: 5px;
+            transition: transform 0.2s, background-color 0.2s;
         }
         .link-tree a:hover {
             background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .language-toggle {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .rajyotsava_logo {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            height: 150px;
         }
     </style>
+    <script>
+        const translations = {
+            en: {
+                title: "Sangeetha Vaibhava Tickets",
+                nonPesStudents: "Non-PES Students",
+                pesAlumni: "PES Alumni",
+                ticketDiscrepancy: "Ticket discrepancy form",
+                toggleButton: "ಕನ್ನಡ"
+            },
+            kn: {
+                title: "ಸಂಗೀತ ವೈಭವ ಟಿಕೆಟ್",
+                nonPesStudents: "ಇತರೆ ಕಾಲೇಜು ವಿದ್ಯಾರ್ಥಿಗಳು",
+                pesAlumni: "ಪಿಇಎಸ್ ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿಗಳು",
+                ticketDiscrepancy: "ಟಿಕೆಟ್ ತೊಂದರೆ ನಮೂನೆ",
+                toggleButton: "English"
+            }
+        };
+
+        function toggleLanguage() {
+            const currentLang = document.getElementById('language-toggle').textContent === 'English' ? 'en' : 'kn';
+            document.getElementById('title').textContent = translations[currentLang].title;
+            document.getElementById('nonPesStudents').textContent = translations[currentLang].nonPesStudents;
+            document.getElementById('pesAlumni').textContent = translations[currentLang].pesAlumni;
+            document.getElementById('ticketDiscrepancy').textContent = translations[currentLang].ticketDiscrepancy;
+            document.getElementById('language-toggle').textContent = translations[currentLang].toggleButton;
+        }
+    </script>
 </head>
-<body>
+<body style="background: linear-gradient(135deg, #FFDD00 0%, #FF0000 100%);">
+    <img class="rajyotsava_logo" src="{{ url_for('static', filename='images/rajyotsava.png') }}" alt="Kannada Rajyotsava Logo">
+    <button id="language-toggle" class="language-toggle" onclick="toggleLanguage()">English</button>
     <div class="link-tree">
-        <img src="{{ url_for('static', filename='images/kannadakoota.jpg') }}" alt="Kannada Koota Logo">
-        <h1>Kannada Rajyotsava 2024 Tickets</h1>
-        <a href="https://docs.google.com/forms/d/1NRTZXtMmjxg5YOb1rPDe7L_j-Q9Zodlb0lAi4PuXVZA">Non-PES Students</a>
-        <a href="https://docs.google.com/forms/d/1_hk-bMZbCn4eXBYSSXfmVrQ3a3mGrB5BgVzt4GWRMfE">PES Alumni</a>
-        <a href="https://forms.gle/Xs8boa644F4mi4Pe9">Ticket discrepancy form</a>
+        <img src="{{ url_for('static', filename='images/kannadakoota.png') }}" alt="Kannada Koota Logo">
+        <h1 id="title">ಸಂಗೀತ ವೈಭವ ಟಿಕೆಟ್</h1>
+        <a id="nonPesStudents" href="https://docs.google.com/forms/d/1NRTZXtMmjxg5YOb1rPDe7L_j-Q9Zodlb0lAi4PuXVZA">ಇತರೆ ಕಾಲೇಜು ವಿದ್ಯಾರ್ಥಿಗಳು</a>
+        <a id="pesAlumni" href="https://docs.google.com/forms/d/1_hk-bMZbCn4eXBYSSXfmVrQ3a3mGrB5BgVzt4GWRMfE">ಪಿಇಎಸ್ ಹಳೆಯ ವಿದ್ಯಾರ್ಥಿಗಳು</a>
+        <a id="ticketDiscrepancy" href="https://forms.gle/Xs8boa644F4mi4Pe9">ಟಿಕೆಟ್ ತೊಂದರೆ ನಮೂನೆ</a>
     </div>
 </body>
 </html>
