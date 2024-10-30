@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Tree</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='KK_logo.ico') }}" type="image/x-icon">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .link-tree {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .link-tree img {
+            max-width: 100px;
+            margin-bottom: 20px;
+        }
+        .link-tree h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .link-tree a {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .link-tree a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="link-tree">
+        <img src="{{ url_for('static', filename='images/kannadakoota.jpg') }}" alt="Kannada Koota Logo">
+        <h1>Kannada Rajyotsava 2024 Tickets</h1>
+        <a href="https://docs.google.com/forms/d/1NRTZXtMmjxg5YOb1rPDe7L_j-Q9Zodlb0lAi4PuXVZA">Non-PES Students</a>
+        <a href="https://docs.google.com/forms/d/1_hk-bMZbCn4eXBYSSXfmVrQ3a3mGrB5BgVzt4GWRMfE">PES Alumni</a>
+        <a href="https://forms.gle/Xs8boa644F4mi4Pe9">Ticket discrepancy form</a>
+    </div>
+</body>
+</html>

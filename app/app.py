@@ -52,7 +52,7 @@ def make_session_permanent():
 # Require login for any routes that need authentication
 @app.before_request
 def require_login():
-    if 'user_id' not in session and request.endpoint not in ['login', 'logout', 'add_user', 'ticket_count']:
+    if 'user_id' not in session and request.endpoint not in ['home', 'login', 'logout', 'add_user', 'ticket_count', 'static']:
         return redirect(url_for('login'))
 
 # Cache control to prevent back button after logout
@@ -65,7 +65,7 @@ def add_header(response):
 
 @app.route('/')
 def home():
-    return redirect(url_for('login'))
+    return render_template('link_tree.html')
 
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
