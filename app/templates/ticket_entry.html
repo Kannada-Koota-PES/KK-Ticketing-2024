@@ -208,6 +208,18 @@
             };
         };
     </script>
+    <style>
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .check-ticket, .ticket-entry {
+                width: 90%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
 </head>
 <body data-logout-url="{{ url_for('logout') }}" style="font-family: Arial, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #89f7fe, #66a6ff); height: 100vh; display: flex; justify-content: center; align-items: center; position: relative;">
 
@@ -220,61 +232,63 @@
     <!-- Logout Button positioned in the top-right corner -->
     <a href="{{ url_for('logout') }}" style="position: absolute; top: 20px; right: 20px; background-color: #ff4d4d; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; font-weight: bold;">Logout</a>
 
-    <!-- Ticket Check Section -->
-    <div style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); width: 15%; background-color: #f9f9f9; padding: 15px; border-radius: 10px; box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);">
-        <h2 style="text-align: center; color: #333;">Check Ticket</h2>
-        <form id="checkTicketForm" style="display: flex; flex-direction: column;">
-            <label for="check_prn" style="margin-bottom: 5px;">PRN:</label>
-            <input type="text" id="check_prn" name="check_prn" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
-            <button type="button" onclick="checkTicket()" style="padding: 10px; background-color: #0066cc; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Check Ticket</button>
-        </form>
-        <div id="ticketDetails" style="margin-top: 15px; font-weight: bold;"></div>
-    </div>
+    <div class="container" style="display: flex; justify-content: space-between; width: 100%; max-width: 1200px; padding: 20px;">
+        <!-- Ticket Check Section -->
+        <div class="check-ticket" style="height: 30%; background-color: #f9f9f9; padding: 15px; border-radius: 10px; box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);">
+            <h2 style="text-align: center; color: #333;">Check Ticket</h2>
+            <form id="checkTicketForm" style="display: flex; flex-direction: column;">
+                <label for="check_prn" style="margin-bottom: 5px;">PRN:</label>
+                <input type="text" id="check_prn" name="check_prn" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                <button type="button" onclick="checkTicket()" style="padding: 10px; background-color: #0066cc; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Check Ticket</button>
+            </form>
+            <div id="ticketDetails" style="margin-top: 15px; font-weight: bold;"></div>
+        </div>
 
-    <!-- Ticket Entry Section -->
-    <div style="max-width: 600px; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); width: 100%; margin: 0 auto;">
-        <h2 style="text-align: center; color: #333;">Ticket Entry</h2>
+        <!-- Ticket Entry Section -->
+        <div class="ticket-entry" style="width: 60%; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+            <h2 style="text-align: center; color: #333;">Ticket Entry</h2>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class="flashes" style="list-style-type: none; padding: 0; margin: 10px 0;">
-                    {% for category, message in messages %}
-                        <li class="{% if category == 'success' %}text-success{% else %}text-danger{% endif %}" style="font-weight: bold;">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <ul class="flashes" style="list-style-type: none; padding: 0; margin: 10px 0;">
+                        {% for category, message in messages %}
+                            <li class="{% if category == 'success' %}text-success{% else %}text-danger{% endif %}" style="font-weight: bold;">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
 
-        <form id="ticketForm" method="POST" action="{{ url_for('ticket_entry') }}" style="display: flex; flex-direction: column;">
-            <label for="email" style="margin-bottom: 5px;">Email:</label>
-            <input type="email" id="email" name="email" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+            <form id="ticketForm" method="POST" action="{{ url_for('ticket_entry') }}" style="display: flex; flex-direction: column;">
+                <label for="email" style="margin-bottom: 5px;">Email:</label>
+                <input type="email" id="email" name="email" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
 
-            <label for="phone" style="margin-bottom: 5px;">Phone:</label>
-            <input type="tel" id="phone" name="phone" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                <label for="phone" style="margin-bottom: 5px;">Phone:</label>
+                <input type="tel" id="phone" name="phone" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
 
-            <label for="prn" style="margin-bottom: 5px;">PRN:</label>
-            <input type="text" id="prn" name="prn" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                <label for="prn" style="margin-bottom: 5px;">PRN:</label>
+                <input type="text" id="prn" name="prn" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
 
-            <label for="name" style="margin-bottom: 5px;">Name:</label>
-            <input type="text" id="name" name="name" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                <label for="name" style="margin-bottom: 5px;">Name:</label>
+                <input type="text" id="name" name="name" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
 
-            <label for="ticket_type" style="margin-bottom: 5px;">Ticket Type:</label>
-            <select id="ticket_type" name="ticket_type" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
-                <option value="" disabled selected>Select Ticket Type</option>
-                <option value="Regular">Regular</option>
-                <option value="VIP">VIP</option>
-            </select>
+                <label for="ticket_type" style="margin-bottom: 5px;">Ticket Type:</label>
+                <select id="ticket_type" name="ticket_type" required style="padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                    <option value="" disabled selected>Select Ticket Type</option>
+                    <option value="Regular">Regular</option>
+                    <option value="VIP">VIP</option>
+                </select>
 
-            <div style="display: flex; justify-content: space-between;">
-                <button type="button" onclick="autofillData()" style="padding: 10px; background-color: #0066cc; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 48%;">
-                    Autofill
-                </button>
+                <div style="display: flex; justify-content: space-between;">
+                    <button type="button" onclick="autofillData()" style="padding: 10px; background-color: #0066cc; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 48%;">
+                        Autofill
+                    </button>
 
-                <button type="button" onclick="confirmSubmission(event)" style="padding: 10px; background-color: #28a745; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 48%;">
-                    Submit
-                </button>
-            </div>
-        </form>
+                    <button type="button" onclick="confirmSubmission(event)" style="padding: 10px; background-color: #28a745; color: #fff; border: none; border-radius: 5px; cursor: pointer; width: 48%;">
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
 </body>
