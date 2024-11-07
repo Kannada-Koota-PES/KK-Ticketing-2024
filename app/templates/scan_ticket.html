@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <h1>QR Code Scanner</h1>
+    <div id="reader" style="width: 300px;"></div>
+
+    <script>
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: { width: 250, height: 250 } });
+
+        function onScanSuccess(decodedText, decodedResult) {
+            html5QrcodeScanner.clear(); // Stop the scanner
+            fetch('/validate_ticket', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ qrValue: decodedText })
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status === 200) {
+                    if (body.valid) {
+                        alert(`Ticket is valid. VIP: ${body.is_vip}`);
+                    } else {
+                        alert('Ticket is already scanned!');
+                    }
+                } else if (status === 404 && body.error === 'Ticket not found') {
+                    alert('Invalid ticket.');
+                } else {
+                    alert('An error occurred while validating the ticket.');
+                }
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while validating the ticket.');
+                window.location.reload();
+            });
+        }
+
+        function onScanFailure(error) {
+            console.warn(`QR Code scan error: ${error}`);
+        }
+
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
+</body>
+</html>

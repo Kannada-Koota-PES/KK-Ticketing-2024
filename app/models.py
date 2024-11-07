@@ -23,6 +23,7 @@ class Ticket(db.Model):
     email = db.Column(db.String(50), nullable=False)
     is_vip = db.Column(db.Boolean, nullable=False)
     mail_sent = db.Column(db.Boolean, default=False)
+    is_scanned = db.Column(db.Boolean, default=False)
     issued_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     issued_at = db.Column(db.DateTime, default=db.func.timezone('UTC', db.func.now()))
 

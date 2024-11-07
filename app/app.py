@@ -217,6 +217,16 @@ def ticket_entry():
         response.headers['Expires'] = '-1'
         return response
     
+@app.route('/scan_ticket', methods=['GET', 'POST'])
+def scan_ticket():
+    if request.method == 'POST':
+        # Do stuff here
+        pass
+    else:
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return render_template('scan_ticket.html')
+    
 @app.route('/fetch_data', methods=['POST'])
 def fetch_data():
     data = request.json
@@ -256,6 +266,26 @@ def check_ticket():
         }}), 200
     else:
         return jsonify({'error': 'Ticket not found'}), 404
+
+@app.route('/validate_ticket', methods=['POST'])
+def validate_ticket():
+    data = request.json
+    try:
+        qr_value = data.get('qrValue')
+        ticket_id, id_no = qr_value[:15], qr_value[16:]
+
+        ticket = Ticket.query.filter_by(ticket_id=ticket_id, id_no=id_no).first()
+        if ticket:
+            if ticket.is_scanned:
+                return jsonify({'valid': False, 'message': 'Ticket already scanned'}), 200
+            ticket.is_scanned = True
+            db.session.commit()
+            return jsonify({'valid': True, 'is_vip': ticket.is_vip}), 200
+        else:
+            return jsonify({'error': 'Ticket not found'}), 404
+    except Exception as e:
+        logger.error(f'Failed to validate ticket. {e}')
+        return jsonify({'error': 'Failed to validate ticket'}), 500
 
 @app.route('/logout')
 def logout():
