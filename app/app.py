@@ -280,7 +280,12 @@ def validate_ticket():
                 return jsonify({'valid': False, 'message': 'Ticket already scanned'}), 200
             ticket.is_scanned = True
             db.session.commit()
-            return jsonify({'valid': True, 'is_vip': ticket.is_vip}), 200
+            return jsonify({
+                'valid': True, 
+                'id_no': ticket.id_no,
+                'name': ticket.name,
+                'is_vip': ticket.is_vip
+                }), 200
         else:
             return jsonify({'error': 'Ticket not found'}), 404
     except Exception as e:

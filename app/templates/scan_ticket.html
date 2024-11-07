@@ -27,7 +27,13 @@
             .then(({ status, body }) => {
                 if (status === 200) {
                     if (body.valid) {
-                        alert(`Ticket is valid. VIP: ${body.is_vip}`);
+                        alert(`Ticket validated successfully!
+
+
+                        Ticket Type: ${body.is_vip ? 'VIP' : 'General'}
+                        Name: ${body.name}
+                        ID: ${body.id_no}`
+                    );
                     } else {
                         alert('Ticket is already scanned!');
                     }
