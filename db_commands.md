@@ -47,3 +47,15 @@ CREATE TABLE tickets (
         FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id)
     );
 ```
+
+5. Create scanned_logs table
+```sql
+    CREATE TABLE scanned_logs (
+        log_id SERIAL PRIMARY KEY,
+        ticket_id VARCHAR(15) NOT NULL,
+        scanned_by INT,
+        scanned_at TIMESTAMP DEFAULT timezone('utc', NOW()),
+        FOREIGN KEY (scanned_by) REFERENCES users(id),
+        FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id)
+    );
+```

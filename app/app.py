@@ -8,7 +8,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import pesu_academy_fetch
-from models import User, Ticket, TicketLogs
+from models import User, Ticket, TicketLogs, ScannedLogs
 from extensions import db
 
 # Initialize Flask app
@@ -270,6 +270,19 @@ def check_ticket():
 @app.route('/validate_ticket', methods=['POST'])
 def validate_ticket():
     data = request.json
+
+    user_id = session['user_id']
+
+    # Clear previous flash messages
+    session.pop('_flashes', None)
+
+    # Check if user is active
+    user = User.query.filter_by(id=user_id).first()
+    if not user.active:
+        flash('User is not active.', 'error')
+        logger.warning(f'User {user_id} is not active.')
+        return redirect(url_for('login'))
+    
     try:
         qr_value = data.get('qrValue')
         ticket_id, id_no = qr_value[:15], qr_value[16:]
@@ -278,8 +291,18 @@ def validate_ticket():
         if ticket:
             if ticket.is_scanned:
                 return jsonify({'valid': False, 'message': 'Ticket already scanned'}), 200
+            
+            # Mark ticket as scanned
             ticket.is_scanned = True
+
+            # Log the scan action
+            log_entry = ScannedLogs(
+                ticket_id=ticket_id,
+                scanned_by=user_id
+            )
+            db.session.add(log_entry)
             db.session.commit()
+            
             return jsonify({
                 'valid': True, 
                 'id_no': ticket.id_no,
