@@ -6,16 +6,84 @@
     <title>QR Scanner</title>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
-<body>
-    <h1>QR Code Scanner</h1>
-    <div id="reader" style="width: 300px;"></div>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; min-height: 100vh; background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); background-size: 400% 400%; animation: gradient 15s ease infinite;">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 1000;">
+        <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;">
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; align-items: center;">
+        <!-- Glass Card Container -->
+        <div style="background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; padding: 24px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); border: 1px solid rgba(255, 255, 255, 0.18); width: 100%;">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 24px;">
+                <h1 style="color: white; font-size: 28px; font-weight: bold; margin: 0 0 8px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">QR Code Scanner</h1>
+                <p style="color: rgba(255, 255, 255, 0.8); font-size: 16px; margin: 0;">Position the QR code within the frame</p>
+            </div>
+            
+            <!-- Scanner Container -->
+            <div style="display: flex; justify-content: center;">
+                <div id="reader" style="width: 300px; border-radius: 8px; overflow: hidden; background: rgba(255, 255, 255, 0.9);"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
         let html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: { width: 250, height: 250 } });
+            "reader", { 
+                fps: 10, 
+                qrbox: { width: 250, height: 250 },
+                showTorchButtonIfSupported: true
+            }
+        );
+
+        function showLoading() {
+            loadingOverlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        function showCustomAlert(message, isSuccess = true) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.left = '50%';
+            alertDiv.style.transform = 'translateX(-50%)';
+            alertDiv.style.padding = '16px 24px';
+            alertDiv.style.borderRadius = '8px';
+            alertDiv.style.background = isSuccess ? 
+                'rgba(52, 211, 153, 0.9)' : 'rgba(248, 113, 113, 0.9)';
+            alertDiv.style.color = 'white';
+            alertDiv.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+            alertDiv.style.zIndex = '1000';
+            alertDiv.style.backdropFilter = 'blur(5px)';
+            alertDiv.style.border = '1px solid rgba(255, 255, 255, 0.18)';
+            alertDiv.style.textAlign = 'center';
+            alertDiv.textContent = message;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Animate in
+            alertDiv.style.animation = 'slideIn 0.5s ease';
+            
+            setTimeout(() => {
+                alertDiv.style.animation = 'slideOut 0.5s ease';
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 500);
+            }, 3000);
+        }
 
         function onScanSuccess(decodedText, decodedResult) {
             html5QrcodeScanner.clear(); // Stop the scanner
+            showLoading();
+            
             fetch('/validate_ticket', {
                 method: 'POST',
                 headers: {
@@ -25,29 +93,29 @@
             })
             .then(response => response.json().then(data => ({ status: response.status, body: data })))
             .then(({ status, body }) => {
+                hideLoading();
                 if (status === 200) {
                     if (body.valid) {
-                        alert(`Ticket validated successfully!
-
-
-                        Ticket Type: ${body.is_vip ? 'VIP' : 'General'}
-                        Name: ${body.name}
-                        ID: ${body.id_no}`
-                    );
+                        showCustomAlert(`✓ Ticket validated!\nType: ${body.is_vip ? 'VIP' : 'General'}\nName: ${body.name}\nID: ${body.id_no}`, true);
                     } else {
-                        alert('Ticket is already scanned!');
+                        showCustomAlert('❌ Ticket already scanned!', false);
                     }
                 } else if (status === 404 && body.error === 'Ticket not found') {
-                    alert('Invalid ticket.');
+                    showCustomAlert('❌ Invalid ticket.', false);
                 } else {
-                    alert('An error occurred while validating the ticket.');
+                    showCustomAlert('❌ Validation error.', false);
                 }
-                window.location.reload();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred while validating the ticket.');
-                window.location.reload();
+                hideLoading();
+                showCustomAlert('❌ System error.', false);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
             });
         }
 
@@ -57,5 +125,46 @@
 
         html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     </script>
+
+    <style>
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-50%) translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-50%) translateY(-100%);
+                opacity: 0;
+            }
+        }
+    </style>
 </body>
 </html>
