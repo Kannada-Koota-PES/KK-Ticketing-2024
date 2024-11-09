@@ -304,7 +304,7 @@ def validate_ticket():
             db.session.commit()
             
             return jsonify({
-                'valid': True, 
+                'valid': True,
                 'id_no': ticket.id_no,
                 'name': ticket.name,
                 'is_vip': ticket.is_vip
