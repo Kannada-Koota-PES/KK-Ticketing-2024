@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; min-height: 100vh; background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); background-size: 400% 400%; animation: gradient 15s ease infinite;">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 1000;">
+        <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;">
+        </div>
+    </div>
+
+    <!-- Logout Button -->
+    <div style="position: fixed; top: 20px; right: 20px;">
+    <button onclick="window.location.href='/logout'" style="padding: 10px 20px; font-size: 16px; color: white; background-color: #e73c7e; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        Logout
+    </button>
+    </div>
+
+    <!-- Main Container -->
+    <div style="max-width: 600px; margin: 0 auto; padding: 70px; min-height: 100vh; display: flex; flex-direction: column; align-items: center;">
+        <!-- Glass Card Container -->
+        <div style="background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; padding: 24px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); border: 1px solid rgba(255, 255, 255, 0.18); width: 100%; margin-bottom: 20px;">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 24px;">
+                <h1 style="color: white; font-size: 28px; font-weight: bold; margin: 0 0 8px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">QR Code Scanner</h1>
+                <p style="color: rgba(255, 255, 255, 0.8); font-size: 16px; margin: 0;">Position the QR code within the frame</p>
+            </div>
+            
+            <!-- Scanner Container -->
+            <div style="display: flex; justify-content: center;">
+                <div id="reader" style="width: 300px; border-radius: 8px; overflow: hidden; background: rgba(255, 255, 255, 0.9);"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { 
+                fps: 10, 
+                qrbox: { width: 250, height: 250 },
+                showTorchButtonIfSupported: true
+            }
+        );
+
+        function showLoading() {
+            loadingOverlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        function showCustomAlert(message, isSuccess = true, isVIP = false) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.left = '50%';
+            alertDiv.style.transform = 'translateX(-50%)';
+            alertDiv.style.padding = '16px 24px';
+            alertDiv.style.borderRadius = '8px';
+            alertDiv.style.background = isSuccess ? isVIP ? 'rgba(52, 211, 153, 0.9)' : 'rgba(249, 173, 39, 0.9)' : 'rgba(248, 113, 113, 0.9)';
+            alertDiv.style.color = 'white';
+            alertDiv.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+            alertDiv.style.zIndex = '1000';
+            alertDiv.style.backdropFilter = 'blur(5px)';
+            alertDiv.style.border = '1px solid rgba(255, 255, 255, 0.18)';
+            alertDiv.style.textAlign = 'center';
+            alertDiv.innerHTML = `<p>${message}</p><button id="alertOkButton">OK</button>`;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Animate in
+            alertDiv.style.animation = 'slideIn 0.5s ease';
+
+            document.getElementById('alertOkButton').addEventListener('click', () => {
+                alertDiv.style.animation = 'slideOut 0.5s ease';
+                setTimeout(() => {
+                    alertDiv.remove();
+                    window.location.reload();
+                }, 500);
+            });
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            html5QrcodeScanner.clear(); // Stop the scanner
+            showLoading();
+            
+            fetch('/validate_ticket', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ qrValue: decodedText })
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                hideLoading();
+                if (status === 200) {
+                    if (body.valid) {
+                        showCustomAlert(`✓ Ticket validated!<br><br><b><u>${body.is_vip ? 'VIP' : 'General'}</u></b><br><br>${body.name}<br>${body.id_no}`, true, body.is_vip);
+                    } else {
+                        showCustomAlert('❌ Ticket already scanned!', false);
+                    }
+                } else if (status === 404 && body.error === 'Ticket not found') {
+                    showCustomAlert('❌ Invalid ticket.', false);
+                } else {
+                    showCustomAlert('❌ Validation error.', false);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                hideLoading();
+                showCustomAlert('❌ System error. Please try logging out and logging in again.', false);
+            });
+        }
+
+        function onScanFailure(error) {
+            console.warn(`QR Code scan error: ${error}`);
+        }
+
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
+
+    <style>
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-50%) translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-50%) translateY(-100%);
+                opacity: 0;
+            }
+        }
+    </style>
+</body>
+</html>
